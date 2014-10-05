@@ -1,0 +1,7 @@
+## Interface: 50400
+## Title: |cffffffffAbu|rAuras
+## Author: Abu
+## RequiredDeps: AbuEssentials
+
+Auras.lua
+Consolidated.lua
