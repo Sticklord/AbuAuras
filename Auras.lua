@@ -16,27 +16,37 @@ local BUFF_SIZE = cfg.Auras.buffSize
 local PADDING_X, PADDING_Y = 7, 7
 local AURAS_PER_ROW = 12
 
-local function SkinAuraIcon(name, index, filter)
-	local button = _G[name..index]
-	local isDebuff = (filter == "HARMFUL");
+local function CreateSkin(button, type)
 
-	if not button or (button and button.Shadow) then return; end
+	if (not button) or (button and button.Shadow) then return; end
+	local isBuff = type == "HELPFUL"
+	local isDebuff = type == "HARMFUL"
+	local isTemp = type == "TEMPENCH"
+	local isConsol = type == "CONSOLIDATED"
+
 	-- All
-	local icon = _G[name..index..'Icon']
+	local name = button:GetName()
+	local icon = _G[name..'Icon']
 	local count = button.count
 	local duration = button.duration
 	--Debuff & TempEnch
-	local border = _G[name..index..'Border']
+	local border = _G[name..'Border']
 	--Debuff
 	--local symbol = button.symbol --colorblind
 
-	if isDebuff then
+	if (isDebuff) then
 		button:SetSize(DEBUFF_SIZE, DEBUFF_SIZE)
 	else
 		button:SetSize(BUFF_SIZE, BUFF_SIZE)
 	end
 
-	icon:SetTexCoord(.05, .95, .05, .95)
+	if isConsol then
+		icon:ClearAllPoints()
+		icon:SetAllPoints(button)
+		icon:SetTexCoord(.15, .35, .3, .7)
+	else
+		icon:SetTexCoord(.05, .95, .05, .95)
+	end
 
 	duration:ClearAllPoints()
 	duration:SetPoint('BOTTOM', button, 'BOTTOM', 0, -2)
@@ -71,6 +81,11 @@ local function SkinAuraIcon(name, index, filter)
 	button.Shadow:SetVertexColor(0, 0, 0, 1)
 end
 
+local function SkinAuraButton(name, index, type)
+	local button = _G[name..index]
+	CreateSkin(button, type)
+end
+
 local function BuffButton1_UpdateAnchor()
 	if BuffButton1 and BuffButton1:IsShown() then
 		BuffButton1:ClearAllPoints()
@@ -87,7 +102,7 @@ end
 local function SkinTempEnchant()
 	for i = 1, NUM_TEMP_ENCHANT_FRAMES do
 		local button = _G['TempEnchant'..i]
-		SkinAuraIcon('TempEnchant', i)
+		SkinAuraButton('TempEnchant', i, "TEMPENCH")
 
 		button:SetScript('OnShow', BuffButton1_UpdateAnchor)
 		button:SetScript('OnHide', BuffButton1_UpdateAnchor)
@@ -95,9 +110,18 @@ local function SkinTempEnchant()
 end
 
 local function UpdateAllBuffAnchors()
-	local buff, aboveBuff, previousBuff, index
+	local buff, aboveBuff, previousBuff, index;
 	local numBuffs = 0;
-	local slack = BuffFrame.numEnchants 
+	local numRows = 0;
+	local slack = BuffFrame.numEnchants;
+
+	TempEnchant1:ClearAllPoints()
+	if ShouldShowConsolidatedBuffFrame() then
+		TempEnchant1:SetPoint("TOPRIGHT", ConsolidatedBuffs, "TOPLEFT", -PADDING_X, 0)
+		slack = slack + 1
+	else
+		TempEnchant1:SetPoint('TOPRIGHT', Minimap, 'TOPLEFT', -15, 0)
+	end
 
 	for i = 1, BUFF_ACTUAL_DISPLAY do
 		local buff = _G['BuffButton'..i]
@@ -131,9 +155,9 @@ end
 
 local function UpdateAllDebuffAnchors(buttonName, index)
 	local numBuffs = BUFF_ACTUAL_DISPLAY + BuffFrame.numEnchants;
-	if (ShouldShowConsolidatedBuffFrame()) then
-		numBuffs = numBuffs + 1; -- consolidated buffs
-	end
+	--if (ShouldShowConsolidatedBuffFrame()) then
+	--	numBuffs = numBuffs + 1; -- consolidated buffs
+	--end
 	
 	local rows = ceil(numBuffs/AURAS_PER_ROW);
 
@@ -188,10 +212,14 @@ local function LoadAuras()
 
 	-- Skinning
 	SkinTempEnchant()
-	hooksecurefunc('AuraButton_Update', SkinAuraIcon)
+	hooksecurefunc('AuraButton_Update', SkinAuraButton)
 
-	-- Load Consolidated
-	ns.LoadConsolidatedAuras()
+	-- Consolidate stuff
+
+	CreateSkin(ConsolidatedBuffs, "CONSOLIDATED")
+	ConsolidatedBuffs:ClearAllPoints()
+	ConsolidatedBuffs:SetPoint('TOPRIGHT', Minimap, 'TOPLEFT', -15, 0)
+	ConsolidatedBuffsTooltip:SetScale(1.1)
 end
 
 ns.RegisterEvent("PLAYER_LOGIN", LoadAuras)
