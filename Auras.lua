@@ -86,68 +86,58 @@ local function SkinAuraButton(name, index, type)
 	CreateSkin(button, type)
 end
 
-local function BuffButton1_UpdateAnchor()
-	if BuffButton1 and BuffButton1:IsShown() then
-		BuffButton1:ClearAllPoints()
-		if (BuffFrame.numEnchants > 0) and (not UnitHasVehicleUI("player")) then
-			BuffButton1:SetPoint('TOPRIGHT', _G['TempEnchant'..BuffFrame.numEnchants], 'TOPLEFT', -PADDING_X, 0)
-			return;
-		else
-			BuffButton1:SetPoint("TOPRIGHT", TempEnchant1)
-			return;
-		end
-	end
-end
-
 local function SkinTempEnchant()
 	for i = 1, NUM_TEMP_ENCHANT_FRAMES do
 		local button = _G['TempEnchant'..i]
 		SkinAuraButton('TempEnchant', i, "TEMPENCH")
-
-		button:SetScript('OnShow', BuffButton1_UpdateAnchor)
-		button:SetScript('OnHide', BuffButton1_UpdateAnchor)
 	end
 end
 
 local function UpdateAllBuffAnchors()
-	local buff, aboveBuff, previousBuff, index;
+	local aboveBuff, previousBuff, index;
 	local numBuffs = 0;
 	local numRows = 0;
 	local slack = BuffFrame.numEnchants;
+	local showingConsolidate = ShouldShowConsolidatedBuffFrame()
 
 	TempEnchant1:ClearAllPoints()
-	if ShouldShowConsolidatedBuffFrame() then
+	if showingConsolidate then
 		TempEnchant1:SetPoint("TOPRIGHT", ConsolidatedBuffs, "TOPLEFT", -PADDING_X, 0)
 		slack = slack + 1
+		aboveBuff = ConsolidatedBuffs
 	else
+		if slack > 0 then
+			aboveBuff = TempEnchant1
+		end
 		TempEnchant1:SetPoint('TOPRIGHT', Minimap, 'TOPLEFT', -15, 0)
+	end
+
+	if (BuffFrame.numEnchants > 0) and (not UnitHasVehicleUI("player")) then
+		previousBuff = _G['TempEnchant'..BuffFrame.numEnchants]
+	elseif showingConsolidate then
+		previousBuff = ConsolidatedBuffs
 	end
 
 	for i = 1, BUFF_ACTUAL_DISPLAY do
 		local buff = _G['BuffButton'..i]
 
-		if not buff.consolidated then
+		if (not buff.consolidated) then
 			numBuffs = numBuffs + 1;
 			index = numBuffs + slack;
 
 			buff:ClearAllPoints()
 
-			-- First buff
-			if numBuffs == 1 then
-				BuffButton1_UpdateAnchor()
-			-- New Row
-			elseif (numBuffs > 1) and mod(index, AURAS_PER_ROW) == 1 then
-				-- First buff on new row
-				if (index == AURAS_PER_ROW + 1) then
-					buff:SetPoint("TOP", TempEnchant1, "BOTTOM", 0, -PADDING_Y)
-				else
-					buff:SetPoint("TOP", aboveBuff, "BOTTOM", 0, -PADDING_Y)
-				end
+			-- First buff, not temp enchants or consolidated
+			if index == 1 then
+				buff:SetPoint("TOPRIGHT", TempEnchant1)
+				aboveBuff = buff
+			-- First buff on new row
+			elseif (index % AURAS_PER_ROW == 1) then
+				buff:SetPoint("TOPRIGHT", aboveBuff, "BOTTOMRIGHT", 0, -PADDING_Y)
 				aboveBuff = buff
 			else
 				buff:SetPoint('TOPRIGHT', previousBuff, 'TOPLEFT', -PADDING_X, 0)
 			end
-
 			previousBuff = buff
 		end
 	end
@@ -155,9 +145,9 @@ end
 
 local function UpdateAllDebuffAnchors(buttonName, index)
 	local numBuffs = BUFF_ACTUAL_DISPLAY + BuffFrame.numEnchants;
-	--if (ShouldShowConsolidatedBuffFrame()) then
-	--	numBuffs = numBuffs + 1; -- consolidated buffs
-	--end
+	if (ShouldShowConsolidatedBuffFrame()) then
+		numBuffs = numBuffs + 1; -- consolidated buffs
+	end
 	
 	local rows = ceil(numBuffs/AURAS_PER_ROW);
 
@@ -202,7 +192,9 @@ local function LoadAuras()
 	TempEnchant1:ClearAllPoints()
 	TempEnchant1:SetPoint('TOPRIGHT', Minimap, 'TOPLEFT', -15, 0)
 	TempEnchant2:ClearAllPoints()
-	TempEnchant2:SetPoint('TOPRIGHT', TempEnchant1, 'TOPLEFT', PADDING_X, 0)
+	TempEnchant2:SetPoint('TOPRIGHT', TempEnchant1, 'TOPLEFT', -PADDING_X, 0)
+	TempEnchant3:ClearAllPoints()
+	TempEnchant3:SetPoint("TOPRIGHT", TempEnchant2, "TOPLEFT", -PADDING_X, 0)
 
 	-- Sizing and acnhors
 	hooksecurefunc('BuffFrame_UpdateAllBuffAnchors', UpdateAllBuffAnchors)
