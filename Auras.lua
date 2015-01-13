@@ -1,20 +1,9 @@
 local _, ns = ...
-setmetatable(ns, { __index = ABUADDONS })
-local _G = _G
+local cfg = ns.Config
 
 --MWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWM--
 --|\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\|--
 --WMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMW--
-
-local cfg = ns.Config.Auras
-local cfg = ns.Config
-local Textures = cfg.IconTextures
-local Font = cfg.Fonts.Normal
-
-local DEBUFF_SIZE = cfg.Auras.debuffSize
-local BUFF_SIZE = cfg.Auras.buffSize
-local PADDING_X, PADDING_Y = 7, 7
-local AURAS_PER_ROW = 12
 
 local function CreateSkin(button, type)
 
@@ -35,9 +24,9 @@ local function CreateSkin(button, type)
 	--local symbol = button.symbol --colorblind
 
 	if (isDebuff) then
-		button:SetSize(DEBUFF_SIZE, DEBUFF_SIZE)
+		button:SetSize(cfg.DebuffSize, cfg.DebuffSize)
 	else
-		button:SetSize(BUFF_SIZE, BUFF_SIZE)
+		button:SetSize(cfg.BuffSize, cfg.BuffSize)
 	end
 
 	if isConsol then
@@ -50,32 +39,32 @@ local function CreateSkin(button, type)
 
 	duration:ClearAllPoints()
 	duration:SetPoint('BOTTOM', button, 'BOTTOM', 0, -2)
-	duration:SetFont(Font, cfg.Auras.fontSize, 'OUTLINE')
+	duration:SetFont(cfg.Font, cfg.FontSize, 'OUTLINE')
 	duration:SetShadowOffset(0, 0)
 	duration:SetDrawLayer('OVERLAY')
 
 	count:ClearAllPoints()
 	count:SetPoint('TOPRIGHT', button)
-	count:SetFont(Font, cfg.Auras.fontSize + 2, 'OUTLINE')
+	count:SetFont(cfg.Font, cfg.FontSize + 2, 'OUTLINE')
 	count:SetShadowOffset(0, 0)
 	count:SetDrawLayer('OVERLAY')
 
 	if border then -- Debuffs/temps
-		border:SetTexture(Textures['Debuff'])
+		border:SetTexture(cfg.DebuffTexture)
 		border:SetPoint('TOPRIGHT', button, 1, 1)
 		border:SetPoint('BOTTOMLEFT', button, -1, -1)
 		border:SetTexCoord(0, 1, 0, 1)
 	else 			-- buffs
 		button.texture = button:CreateTexture(nil, 'ARTWORK')
 		button.texture:SetParent(button)
-		button.texture:SetTexture(Textures['Normal'])
+		button.texture:SetTexture(cfg.NormalTexture)
 		button.texture:SetPoint('TOPRIGHT', button, 1, 1)
 		button.texture:SetPoint('BOTTOMLEFT', button, -1, -1)
-		button.texture:SetVertexColor(unpack(cfg.Colors.Border))
+		button.texture:SetVertexColor(cfg.BorderColor)
 	end
 
 	button.Shadow = button:CreateTexture(nil, 'BACKGROUND')
-	button.Shadow:SetTexture(Textures['Shadow'])
+	button.Shadow:SetTexture(cfg.ShadowTexture)
 	button.Shadow:SetPoint('TOPRIGHT', button.texture or border, 3.35, 3.35)
 	button.Shadow:SetPoint('BOTTOMLEFT', button.texture or border, -3.35, -3.35)
 	button.Shadow:SetVertexColor(0, 0, 0, 1)
@@ -102,7 +91,7 @@ local function UpdateAllBuffAnchors()
 
 	TempEnchant1:ClearAllPoints()
 	if showingConsolidate then
-		TempEnchant1:SetPoint("TOPRIGHT", ConsolidatedBuffs, "TOPLEFT", -PADDING_X, 0)
+		TempEnchant1:SetPoint("TOPRIGHT", ConsolidatedBuffs, "TOPLEFT", -cfg.Padding_X, 0)
 		slack = slack + 1
 		aboveBuff = ConsolidatedBuffs
 	else
@@ -132,11 +121,11 @@ local function UpdateAllBuffAnchors()
 				buff:SetPoint("TOPRIGHT", TempEnchant1)
 				aboveBuff = buff
 			-- First buff on new row
-			elseif (index % AURAS_PER_ROW == 1) then
-				buff:SetPoint("TOPRIGHT", aboveBuff, "BOTTOMRIGHT", 0, -PADDING_Y)
+			elseif (index % cfg.AurasPerRow == 1) then
+				buff:SetPoint("TOPRIGHT", aboveBuff, "BOTTOMRIGHT", 0, -cfg.Padding_Y)
 				aboveBuff = buff
 			else
-				buff:SetPoint('TOPRIGHT', previousBuff, 'TOPLEFT', -PADDING_X, 0)
+				buff:SetPoint('TOPRIGHT', previousBuff, 'TOPLEFT', -cfg.Padding_X, 0)
 			end
 			previousBuff = buff
 		end
@@ -149,7 +138,7 @@ local function UpdateAllDebuffAnchors(buttonName, index)
 		numBuffs = numBuffs + 1; -- consolidated buffs
 	end
 	
-	local rows = ceil(numBuffs/AURAS_PER_ROW);
+	local rows = ceil(numBuffs/cfg.AurasPerRow);
 
 	local buff = _G[buttonName..index];
 	buff:ClearAllPoints()
@@ -159,17 +148,17 @@ local function UpdateAllDebuffAnchors(buttonName, index)
 		-- First button
 		local offsetY
 		if ( rows < 2 ) then
-			offsetY = (PADDING_Y + DEBUFF_SIZE);
+			offsetY = (cfg.Padding_Y + cfg.DebuffSize);
 		else
-			offsetY = rows * (PADDING_Y + BUFF_SIZE);
+			offsetY = rows * (cfg.Padding_Y + cfg.BuffSize);
 		end
 		buff:SetPoint("TOPRIGHT", TempEnchant1, "BOTTOMRIGHT", 0, -offsetY);
-	elseif ( (index > 1) and ((index % AURAS_PER_ROW) == 1) ) then
+	elseif ( (index > 1) and ((index % cfg.AurasPerRow) == 1) ) then
 		-- New row
-		buff:SetPoint("TOP", _G[buttonName..(index-AURAS_PER_ROW)], "BOTTOM", 0, -PADDING_Y);
+		buff:SetPoint("TOP", _G[buttonName..(index-cfg.AurasPerRow)], "BOTTOM", 0, -cfg.Padding_Y);
 	else
 		-- Else anchor to the one on the right
-		buff:SetPoint("TOPRIGHT", _G[buttonName..(index-1)], "TOPLEFT", -PADDING_X, 0);
+		buff:SetPoint("TOPRIGHT", _G[buttonName..(index-1)], "TOPLEFT", -cfg.Padding_X, 0);
 	end
 end
 
@@ -192,9 +181,9 @@ local function LoadAuras()
 	TempEnchant1:ClearAllPoints()
 	TempEnchant1:SetPoint('TOPRIGHT', Minimap, 'TOPLEFT', -15, 0)
 	TempEnchant2:ClearAllPoints()
-	TempEnchant2:SetPoint('TOPRIGHT', TempEnchant1, 'TOPLEFT', -PADDING_X, 0)
+	TempEnchant2:SetPoint('TOPRIGHT', TempEnchant1, 'TOPLEFT', -cfg.Padding_X, 0)
 	TempEnchant3:ClearAllPoints()
-	TempEnchant3:SetPoint("TOPRIGHT", TempEnchant2, "TOPLEFT", -PADDING_X, 0)
+	TempEnchant3:SetPoint("TOPRIGHT", TempEnchant2, "TOPLEFT", -cfg.Padding_X, 0)
 
 	-- Sizing and acnhors
 	hooksecurefunc('BuffFrame_UpdateAllBuffAnchors', UpdateAllBuffAnchors)
@@ -214,4 +203,4 @@ local function LoadAuras()
 	ConsolidatedBuffsTooltip:SetScale(1.1)
 end
 
-ns.RegisterEvent("PLAYER_LOGIN", LoadAuras)
+ns:RegisterEvent("PLAYER_LOGIN", LoadAuras)
