@@ -60,7 +60,7 @@ local function CreateSkin(button, type)
 		button.texture:SetTexture(cfg.NormalTexture)
 		button.texture:SetPoint('TOPRIGHT', button, 1, 1)
 		button.texture:SetPoint('BOTTOMLEFT', button, -1, -1)
-		button.texture:SetVertexColor(cfg.BorderColor)
+		button.texture:SetVertexColor(unpack(cfg.BorderColor))
 	end
 
 	button.Shadow = button:CreateTexture(nil, 'BACKGROUND')
