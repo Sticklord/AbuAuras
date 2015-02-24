@@ -162,45 +162,27 @@ local function UpdateAllDebuffAnchors(buttonName, index)
 	end
 end
 
--- Replace Blizzards duration display
-do	local minute, hour, day = 60, 60*60, 60*60*24
-	local hourish, dayish = minute*59, hour*23 
-	function _G.SecondsToTimeAbbrev(sec)
-		if ( sec >= dayish  ) then
-			return '|cffffffff%dd|r', floor(sec/day + .5);
-		elseif ( sec >= hourish  ) then
-			return '|cffffffff%dh|r', floor(sec/hour + .5);
-		elseif ( sec >= minute  ) then
-			return '|cffffffff%dm|r', floor(sec/minute + .5);
-		end
-		return '|cffffffff%d|r', sec;
-end	end
+-- Temp Enchant frame
+TempEnchant1:ClearAllPoints()
+TempEnchant1:SetPoint('TOPRIGHT', Minimap, 'TOPLEFT', -15, 0)
+TempEnchant2:ClearAllPoints()
+TempEnchant2:SetPoint('TOPRIGHT', TempEnchant1, 'TOPLEFT', -cfg.Padding_X, 0)
+TempEnchant3:ClearAllPoints()
+TempEnchant3:SetPoint("TOPRIGHT", TempEnchant2, "TOPLEFT", -cfg.Padding_X, 0)
 
-local function LoadAuras()
-	-- Temp Enchant frame
-	TempEnchant1:ClearAllPoints()
-	TempEnchant1:SetPoint('TOPRIGHT', Minimap, 'TOPLEFT', -15, 0)
-	TempEnchant2:ClearAllPoints()
-	TempEnchant2:SetPoint('TOPRIGHT', TempEnchant1, 'TOPLEFT', -cfg.Padding_X, 0)
-	TempEnchant3:ClearAllPoints()
-	TempEnchant3:SetPoint("TOPRIGHT", TempEnchant2, "TOPLEFT", -cfg.Padding_X, 0)
+-- Sizing and acnhors
+hooksecurefunc('BuffFrame_UpdateAllBuffAnchors', UpdateAllBuffAnchors)
+hooksecurefunc("DebuffButton_UpdateAnchors", UpdateAllDebuffAnchors)
 
-	-- Sizing and acnhors
-	hooksecurefunc('BuffFrame_UpdateAllBuffAnchors', UpdateAllBuffAnchors)
-	hooksecurefunc("DebuffButton_UpdateAnchors", UpdateAllDebuffAnchors)
+BuffFrame:SetScript("OnUpdate", nil)
 
-	BuffFrame:SetScript("OnUpdate", nil)
+-- Skinning
+SkinTempEnchant()
+hooksecurefunc('AuraButton_Update', SkinAuraButton)
 
-	-- Skinning
-	SkinTempEnchant()
-	hooksecurefunc('AuraButton_Update', SkinAuraButton)
+-- Consolidate stuff
 
-	-- Consolidate stuff
-
-	CreateSkin(ConsolidatedBuffs, "CONSOLIDATED")
-	ConsolidatedBuffs:ClearAllPoints()
-	ConsolidatedBuffs:SetPoint('TOPRIGHT', Minimap, 'TOPLEFT', -15, 0)
-	ConsolidatedBuffsTooltip:SetScale(1.1)
-end
-
-ns:RegisterEvent("PLAYER_LOGIN", LoadAuras)
+CreateSkin(ConsolidatedBuffs, "CONSOLIDATED")
+ConsolidatedBuffs:ClearAllPoints()
+ConsolidatedBuffs:SetPoint('TOPRIGHT', Minimap, 'TOPLEFT', -15, 0)
+ConsolidatedBuffsTooltip:SetScale(1.1)

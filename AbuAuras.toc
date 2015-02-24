@@ -3,8 +3,7 @@
 ## Author: Abu
 ## RequiredDeps: AbuEssentials
 
-libs\AbuTheLib.lua
-
+defaults.lua
 CONFIG.lua
 
 Auras.lua
