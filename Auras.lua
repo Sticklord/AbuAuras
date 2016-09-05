@@ -87,7 +87,7 @@ local function UpdateAllBuffAnchors()
 	local numBuffs = 0;
 	local numRows = 0;
 	local slack = BuffFrame.numEnchants;
-	local showingConsolidate = ShouldShowConsolidatedBuffFrame()
+	local showingConsolidate = false --ShouldShowConsolidatedBuffFrame()
 
 	TempEnchant1:ClearAllPoints()
 	if showingConsolidate then
@@ -134,9 +134,9 @@ end
 
 local function UpdateAllDebuffAnchors(buttonName, index)
 	local numBuffs = BUFF_ACTUAL_DISPLAY + BuffFrame.numEnchants;
-	if (ShouldShowConsolidatedBuffFrame()) then
-		numBuffs = numBuffs + 1; -- consolidated buffs
-	end
+	--if (ShouldShowConsolidatedBuffFrame()) then
+	--	numBuffs = numBuffs + 1; -- consolidated buffs
+	--end
 	
 	local rows = ceil(numBuffs/cfg.AurasPerRow);
 
@@ -182,7 +182,7 @@ hooksecurefunc('AuraButton_Update', SkinAuraButton)
 
 -- Consolidate stuff
 
-CreateSkin(ConsolidatedBuffs, "CONSOLIDATED")
-ConsolidatedBuffs:ClearAllPoints()
-ConsolidatedBuffs:SetPoint('TOPRIGHT', Minimap, 'TOPLEFT', -15, 0)
-ConsolidatedBuffsTooltip:SetScale(1.1)
+--CreateSkin(ConsolidatedBuffs, "CONSOLIDATED")
+--ConsolidatedBuffs:ClearAllPoints()
+--ConsolidatedBuffs:SetPoint('TOPRIGHT', Minimap, 'TOPLEFT', -15, 0)
+--ConsolidatedBuffsTooltip:SetScale(1.1)
