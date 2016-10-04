@@ -11,7 +11,6 @@ local function CreateSkin(button, type)
 	local isBuff = type == "HELPFUL"
 	local isDebuff = type == "HARMFUL"
 	local isTemp = type == "TEMPENCH"
-	local isConsol = type == "CONSOLIDATED"
 
 	-- All
 	local name = button:GetName()
@@ -29,13 +28,7 @@ local function CreateSkin(button, type)
 		button:SetSize(cfg.BuffSize, cfg.BuffSize)
 	end
 
-	if isConsol then
-		icon:ClearAllPoints()
-		icon:SetAllPoints(button)
-		icon:SetTexCoord(.15, .35, .3, .7)
-	else
-		icon:SetTexCoord(.05, .95, .05, .95)
-	end
+	icon:SetTexCoord(.05, .95, .05, .95)
 
 	duration:ClearAllPoints()
 	duration:SetPoint('BOTTOM', button, 'BOTTOM', 0, -2)
@@ -87,56 +80,42 @@ local function UpdateAllBuffAnchors()
 	local numBuffs = 0;
 	local numRows = 0;
 	local slack = BuffFrame.numEnchants;
-	local showingConsolidate = false --ShouldShowConsolidatedBuffFrame()
 
 	TempEnchant1:ClearAllPoints()
-	if showingConsolidate then
-		TempEnchant1:SetPoint("TOPRIGHT", ConsolidatedBuffs, "TOPLEFT", -cfg.Padding_X, 0)
-		slack = slack + 1
-		aboveBuff = ConsolidatedBuffs
-	else
-		if slack > 0 then
-			aboveBuff = TempEnchant1
-		end
-		TempEnchant1:SetPoint('TOPRIGHT', Minimap, 'TOPLEFT', -15, 0)
+	if slack > 0 then
+		aboveBuff = TempEnchant1
 	end
+	TempEnchant1:SetPoint('TOPRIGHT', Minimap, 'TOPLEFT', -15, 0)
 
 	if (BuffFrame.numEnchants > 0) and (not UnitHasVehicleUI("player")) then
 		previousBuff = _G['TempEnchant'..BuffFrame.numEnchants]
-	elseif showingConsolidate then
-		previousBuff = ConsolidatedBuffs
 	end
 
 	for i = 1, BUFF_ACTUAL_DISPLAY do
 		local buff = _G['BuffButton'..i]
 
-		if (not buff.consolidated) then
-			numBuffs = numBuffs + 1;
-			index = numBuffs + slack;
+		numBuffs = numBuffs + 1;
+		index = numBuffs + slack;
 
-			buff:ClearAllPoints()
+		buff:ClearAllPoints()
 
-			-- First buff, not temp enchants or consolidated
-			if index == 1 then
-				buff:SetPoint("TOPRIGHT", TempEnchant1)
-				aboveBuff = buff
-			-- First buff on new row
-			elseif (index % cfg.AurasPerRow == 1) then
-				buff:SetPoint("TOPRIGHT", aboveBuff, "BOTTOMRIGHT", 0, -cfg.Padding_Y)
-				aboveBuff = buff
-			else
-				buff:SetPoint('TOPRIGHT', previousBuff, 'TOPLEFT', -cfg.Padding_X, 0)
-			end
-			previousBuff = buff
+		-- First buff, not temp enchants
+		if index == 1 then
+			buff:SetPoint("TOPRIGHT", TempEnchant1)
+			aboveBuff = buff
+		-- First buff on new row
+		elseif (index % cfg.AurasPerRow == 1) then
+			buff:SetPoint("TOPRIGHT", aboveBuff, "BOTTOMRIGHT", 0, -cfg.Padding_Y)
+			aboveBuff = buff
+		else
+			buff:SetPoint('TOPRIGHT', previousBuff, 'TOPLEFT', -cfg.Padding_X, 0)
 		end
+		previousBuff = buff
 	end
 end
 
 local function UpdateAllDebuffAnchors(buttonName, index)
 	local numBuffs = BUFF_ACTUAL_DISPLAY + BuffFrame.numEnchants;
-	--if (ShouldShowConsolidatedBuffFrame()) then
-	--	numBuffs = numBuffs + 1; -- consolidated buffs
-	--end
 	
 	local rows = ceil(numBuffs/cfg.AurasPerRow);
 
@@ -179,10 +158,3 @@ BuffFrame:SetScript("OnUpdate", nil)
 -- Skinning
 SkinTempEnchant()
 hooksecurefunc('AuraButton_Update', SkinAuraButton)
-
--- Consolidate stuff
-
---CreateSkin(ConsolidatedBuffs, "CONSOLIDATED")
---ConsolidatedBuffs:ClearAllPoints()
---ConsolidatedBuffs:SetPoint('TOPRIGHT', Minimap, 'TOPLEFT', -15, 0)
---ConsolidatedBuffsTooltip:SetScale(1.1)
